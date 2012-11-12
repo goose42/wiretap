@@ -1,0 +1,2 @@
+Hey! this is a file created to test ensure that we dont get any false positves with reading a file. all tests with wiretap should fail when opening this file.
+
