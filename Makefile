@@ -1,4 +1,4 @@
-SOURCES=wiretap.cpp process_pcap_file.h process_pcap_file.cpp
+SOURCES=wiretap.cpp aggr_packets.h aggr_packets.cpp read_fns.cpp read_fns.h
 
 OUTPUT=wiretap
 CC=g++

@@ -1,10 +1,9 @@
-#ifndef _PROCESS_PCAP_FILE_H
-#define _PROCESS_PCAP_FILE_H
+#ifndef _aggr_packets_H
+#define _aggr_packets_H
 
 #include <pcap/pcap.h>
 namespace cap_file
 {
-
 	class pcap_data_holder
 	{
 
@@ -17,8 +16,7 @@ namespace cap_file
 
 
 	};
-
-}
+} 
 
 
 #endif
