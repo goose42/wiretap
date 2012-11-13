@@ -1,5 +1,4 @@
 #include <iostream>
-#include <stdio.h>
 
 
 #include "read_fns.h"
