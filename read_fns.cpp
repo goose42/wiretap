@@ -1,6 +1,8 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <netinet/ip.h>
+
 
 #include "read_fns.h"
 #include "aggr_packets.h"
@@ -54,16 +56,23 @@ void cap_file::pcap_read (FILE *fp)
 void cap_file::got_packet(u_char* args, const struct pcap_pkthdr* header, const u_char* packet)
 {   
 	struct eth *ether = (struct eth *) packet;
+	struct ip *ip_head = (struct ip *) (packet + sizeof (struct eth));
 	string MAC_src, MAC_dest;
 	
 	pcap_data_holder *aggr_data = (pcap_data_holder *) args;
 
 	aggr_data->inc_num_of_pac();
-
+	
+	//linked layer
 	MAC_src=cap_file::MAC_in_string(ether->e_src);
 	MAC_dest=cap_file::MAC_in_string(ether->e_dest);
 	aggr_data->add_MAC(&MAC_src,&MAC_dest);
 
+//	cout<<std::hex<<ntohs(ether->type)<<endl;
+	
+	aggr_data->add_network_protocol(ntohs(ether->type));
+	//network later
+	
 
 	return;
 }
