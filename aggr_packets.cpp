@@ -73,11 +73,11 @@ void pcap_data_holder::add_network_protocol(int prot)
 	else 
 		if (prot == 2054)
 			nw_proto["ARP"]++;
-			else 
-				{
-					temp<<"0x"<<std::setw(4)<<std::setfill('0')<<std::hex<<prot;
-					nw_proto[temp.str()]++;
-					}
-		
-	
-	}
+		else 
+		{
+			temp<<"0x"<<std::setw(4)<<std::setfill('0')<<std::hex<<prot;
+			nw_proto[temp.str()]++;
+		}
+
+
+}
