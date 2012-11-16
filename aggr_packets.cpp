@@ -18,7 +18,7 @@ pcap_data_holder::pcap_data_holder()
 	} 
 
 void pcap_data_holder::output_content()
-{ 
+{  
 	typedef std::map<string,int>::const_iterator map_iter;
 	typedef std::map<int,int>::const_iterator map_iter_int;
 	typedef std::map<string, unsigned int>::const_iterator map_iter_string;
@@ -80,6 +80,13 @@ void pcap_data_holder::output_content()
 		cout<<setw(20)<<imap->first<<" -- "<<setw(16)<<std::hex<<imap->second<<endl;
 
 	}
+	cout<<endl<<"********Transport Layer information ******"<<endl<<endl;
+	cout<<endl<<"Here are the transport layer protocols:"<<endl;	
+	for (map_iter imap = tr_proto.begin(); imap != tr_proto.end(); imap++)
+	{
+		cout<<setw(6)<<std::hex<<imap->first<<" -- "<<setw(4)<<imap->second<<" -- "<<std::setprecision(2)<<(((float)imap->second / number_of_ip_packets) * 100)<<"%"<<endl;
+
+	}
 
 	
 	return;
@@ -92,7 +99,7 @@ void pcap_data_holder::inc_num_of_pac()
 	}
 	
 void pcap_data_holder::add_MAC(string *src, string *dest)
-{  
+{    
 	src_mac[*src]++;
 	dest_mac[*dest]++;
 	return;
@@ -111,6 +118,7 @@ void pcap_data_holder::add_network_protocol(int prot)
 			temp<<"0x"<<std::setw(4)<<std::setfill('0')<<std::hex<<prot;
 			nw_proto[temp.str()]++;
  		}
+	return;	
 }
 
 void pcap_data_holder::add_source_ip(char *src)
@@ -143,8 +151,38 @@ void pcap_data_holder::add_arp_participants(string* arp_mac, unsigned int arp_ip
 	}
 
 
-void pcap_data_holder::add_transport_protocol(string *proto)
+void pcap_data_holder::add_transport_protocol(u_int8_t *proto)
 {
-	tr_proto[proto]++
+	switch (*proto)
+	{
+		case 0x06:
+			tr_proto["TCP"]++;
+			break;
+		case 0x01:
+			tr_proto["ICMP"]++;
+			break;
+		case 0x11:
+			tr_proto["UDP"]++;
+			break;
+		default:
+			std::stringstream temp;
+			temp<<"0x"<<std::setfill('0')<<setw(2)<<std::hex<<(int)*proto;
+	//		temp<<std::hex<<*proto;
+			tr_proto[temp.str()]++;
+	}
+
+	/*if (*proto == 0x06)
+	{
+		tr_proto["TCP"]++;
+		}
+	if (*proto == 0x01)
+	{
+		tr_proto["ICMP"]++;
+		}
+	if (*proto == 0x11)
+	{
+		tr_proto["UDP"]++;
+		}	*/
 	
+		
 	} 	

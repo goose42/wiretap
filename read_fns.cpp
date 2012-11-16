@@ -84,10 +84,7 @@ void cap_file::got_packet(u_char* args, const struct pcap_pkthdr* header, const 
 		aggr_data->add_ttl(ip_head->ip_ttl);
 		
 		//transport layer
-		if(ip_head->ip_p == 0x06)
-		{
-			cout<<"tcp!";
-			}
+		aggr_data->add_transport_protocol(&ip_head->ip_p);	
 
 	} 
 	
