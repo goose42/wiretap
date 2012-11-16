@@ -2,6 +2,11 @@
 #include <iomanip>
 #include <sstream>
 #include <netinet/ip.h>
+#include <arpa/inet.h>
+#include <netinet/if_ether.h>
+#include <netinet/tcp.h>
+
+
 
 
 #include "read_fns.h"
@@ -56,24 +61,46 @@ void cap_file::pcap_read (FILE *fp)
 void cap_file::got_packet(u_char* args, const struct pcap_pkthdr* header, const u_char* packet)
 {   
 	struct eth *ether = (struct eth *) packet;
-	struct ip *ip_head = (struct ip *) (packet + sizeof (struct eth));
 	string MAC_src, MAC_dest;
-	
+
 	pcap_data_holder *aggr_data = (pcap_data_holder *) args;
 
 	aggr_data->inc_num_of_pac();
-	
+
 	//linked layer
 	MAC_src=cap_file::MAC_in_string(ether->e_src);
 	MAC_dest=cap_file::MAC_in_string(ether->e_dest);
 	aggr_data->add_MAC(&MAC_src,&MAC_dest);
 
-//	cout<<std::hex<<ntohs(ether->type)<<endl;
-	
+	//	cout<<std::hex<<ntohs(ether->type)<<endl;
+
 	aggr_data->add_network_protocol(ntohs(ether->type));
 	//network later
-	
+	if (ntohs(ether->type) == 2048) //do IP related stuff
+	{
+		struct ip *ip_head = (struct ip *) (packet + sizeof (struct eth));
+		aggr_data->add_source_ip(inet_ntoa(ip_head->ip_src));
+		aggr_data->add_dest_ip(inet_ntoa(ip_head->ip_dst));
+		aggr_data->add_ttl(ip_head->ip_ttl);
+		
+		//transport layer
+		if(ip_head->ip_p == 0x06)
+		{
+			cout<<"tcp!";
+			}
 
+	} 
+	
+/*	if (ntohs(ether->type) == 2054) //do arp related stuff
+	{
+		struct arp * arp_head = (struct  arp *) (packet + sizeof (struct eth));
+		string arp_mac, arp_ip;
+		arp_mac = cap_file::MAC_in_string(arp_head->arp_eth_source);
+		//arp_ip = inet_ntoa(arp_head->arp_ip_source);
+		aggr_data->add_arp_participants(&arp_mac, arp_head->arp_ip_source); 
+		}
+	*/
+	
 	return;
 }
 

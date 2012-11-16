@@ -14,11 +14,16 @@ using std::setw;
 pcap_data_holder::pcap_data_holder()
 {
 	number_of_packets = 0;
-	}
+	number_of_ip_packets = 0;
+	} 
 
 void pcap_data_holder::output_content()
 { 
 	typedef std::map<string,int>::const_iterator map_iter;
+	typedef std::map<int,int>::const_iterator map_iter_int;
+	typedef std::map<string, unsigned int>::const_iterator map_iter_string;
+	
+	
 	cout<<"total number of packets:"<<number_of_packets<<endl;
 	
 	cout<<endl<<"******** Link Layer information ******"<<endl<<endl;
@@ -45,9 +50,37 @@ void pcap_data_holder::output_content()
 		cout<<setw(6)<<imap->first<<" -- "<<setw(4)<<imap->second<<" -- "<<std::setprecision(2)<<(((float)imap->second / number_of_packets) * 100)<<"%"<<endl;
 
 	}
+	cout<<endl<<"Here are the source IP addresses:"<<endl;	
+	cout<<endl<<"Addresses | Number of occurences | %"<<endl<<endl;
+	for (map_iter imap = nw_src_ip.begin(); imap != nw_src_ip.end(); imap++)
+	{
+		cout<<setw(16)<<imap->first<<" -- "<<setw(4)<<imap->second<<" -- "<<std::setprecision(2)<<(((float)imap->second / number_of_ip_packets) * 100)<<"%"<<endl;
 
+	}
+	cout<<endl<<"Here are the destination IP addresses:"<<endl;	
+	cout<<endl<<"Addresses | Number of occurences | %"<<endl<<endl;
+	for (map_iter imap = nw_dest_ip.begin(); imap != nw_dest_ip.end(); imap++)
+	{
+		cout<<setw(16)<<imap->first<<" -- "<<setw(4)<<imap->second<<" -- "<<std::setprecision(2)<<(((float)imap->second / (float)number_of_ip_packets) * 100)<<"%"<<endl;
 
-	
+	}
+
+	cout<<endl<<"Here are the TTLs found in these IP headers:"<<endl;	
+	cout<<endl<<"TTL | Number of occurences | %"<<endl<<endl;
+	for (map_iter_int imap = nw_ttl.begin(); imap != nw_ttl.end(); imap++)
+	{
+		cout<<setw(6)<<imap->first<<" -- "<<setw(4)<<imap->second<<" -- "<<std::setprecision(2)<<(((float)imap->second / (float)number_of_ip_packets) * 100)<<"%"<<endl;
+
+	}
+
+	cout<<endl<<"Here are the ARP participants:"<<endl;	
+	cout<<endl<<"MAC address | IP address"<<endl<<endl;
+	for (map_iter_string imap = nw_arp.begin(); imap != nw_arp.end(); imap++)
+	{
+		cout<<setw(20)<<imap->first<<" -- "<<setw(16)<<std::hex<<imap->second<<endl;
+
+	}
+
 	
 	return;
 	}
@@ -59,14 +92,14 @@ void pcap_data_holder::inc_num_of_pac()
 	}
 	
 void pcap_data_holder::add_MAC(string *src, string *dest)
-{
+{  
 	src_mac[*src]++;
 	dest_mac[*dest]++;
 	return;
 	}		
 
 void pcap_data_holder::add_network_protocol(int prot)
-{
+{  
 	std::stringstream temp;
 	if (prot == 2048)
 		nw_proto["IP"]++;
@@ -77,7 +110,41 @@ void pcap_data_holder::add_network_protocol(int prot)
 		{
 			temp<<"0x"<<std::setw(4)<<std::setfill('0')<<std::hex<<prot;
 			nw_proto[temp.str()]++;
-		}
-
-
+ 		}
 }
+
+void pcap_data_holder::add_source_ip(char *src)
+{
+	number_of_ip_packets++;
+	nw_src_ip[src]++;
+	return;
+	}
+
+	
+void pcap_data_holder::add_dest_ip(char *src)
+{ 
+	nw_dest_ip[src]++;
+	return;
+	}
+
+	
+void pcap_data_holder::add_ttl(short unsigned int ttl)
+{
+	nw_ttl[ttl]++;
+	return;
+	}
+
+
+	
+void pcap_data_holder::add_arp_participants(string* arp_mac, unsigned int arp_ip)
+{
+	nw_arp[*arp_mac] = arp_ip;
+	
+	}
+
+
+void pcap_data_holder::add_transport_protocol(string *proto)
+{
+	tr_proto[proto]++
+	
+	} 	
