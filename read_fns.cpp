@@ -4,7 +4,7 @@
 #include <netinet/ip.h>
 #include <arpa/inet.h>
 #include <netinet/if_ether.h>
-#include <netinet/tcp.h>
+//#include <netinet/tcp.h>
 
 
 
@@ -53,13 +53,14 @@ void cap_file::pcap_read (FILE *fp)
 	pcap_loop(handle, -1, cap_file::got_packet, user_data); 	
 
 	aggr_packet.output_content();
+  	
 	return;
 
 }  
 
 
 void cap_file::got_packet(u_char* args, const struct pcap_pkthdr* header, const u_char* packet)
-{   
+{     
 	struct eth *ether = (struct eth *) packet;
 	string MAC_src, MAC_dest;
 
@@ -84,19 +85,30 @@ void cap_file::got_packet(u_char* args, const struct pcap_pkthdr* header, const 
 		aggr_data->add_ttl(ip_head->ip_ttl);
 		
 		//transport layer
-		aggr_data->add_transport_protocol(&ip_head->ip_p);	
+		aggr_data->add_transport_protocol(&ip_head->ip_p);
+		if(ip_head->ip_p == 0x06) //if we see a tcp protocol, do
+		{
+			struct cap_file::tcp_header *tcp_hdr = (struct cap_file::tcp_header *) (packet + sizeof (struct eth) + sizeof (struct ip));
+			int source_tcp_port = ntohs(tcp_hdr->th_sport);
+			int dest_tcp_port = ntohs(tcp_hdr->th_dport);
+			aggr_data->add_tcp_ports(source_tcp_port,dest_tcp_port);
+			
+			//get the flags as a list, in a string
+			aggr_data->add_tcp_flags(get_list_of_TCP_flags(tcp_hdr->th_flags));	
+			
+			}	
 
 	} 
 	
-/*	if (ntohs(ether->type) == 2054) //do arp related stuff
+	if (ntohs(ether->type) == 2054) //do arp related stuff
 	{
-		struct arp * arp_head = (struct  arp *) (packet + sizeof (struct eth));
+		struct ether_arp * arp_head = (struct  ether_arp *) (packet + sizeof(struct eth));
 		string arp_mac, arp_ip;
-		arp_mac = cap_file::MAC_in_string(arp_head->arp_eth_source);
-		//arp_ip = inet_ntoa(arp_head->arp_ip_source);
-		aggr_data->add_arp_participants(&arp_mac, arp_head->arp_ip_source); 
+		arp_mac = cap_file::MAC_in_string(arp_head->arp_sha);
+		arp_ip = inet_ntoa(*(struct in_addr *) arp_head->arp_spa);
+		aggr_data->add_arp_participants(&arp_mac, &arp_ip); 
 		}
-	*/
+	
 	
 	return;
 }
@@ -116,4 +128,69 @@ string cap_file::MAC_in_string(u_char *raw)
 		
 	return MAC_addr.str();		
 	
+	}
+	
+
+//string ip_uint_to_ip(uint)
+
+
+string cap_file::get_list_of_TCP_flags(u_char flag_tcp)
+{ 
+	std::stringstream flag_str;
+	bool not_first_flag = false;
+	if ((flag_tcp & 0x20) == TH_URG)
+ 	{
+		if (not_first_flag)
+		{
+			flag_str<<" + ";
+		}
+		flag_str<<"URG";
+		not_first_flag = true;	
+	}
+	if ((flag_tcp & 0x10) == TH_ACK)
+	{ 
+		if (not_first_flag)
+		{
+			flag_str<<" + ";
+		}
+		flag_str<<"ACK";
+		not_first_flag = true;	
+	}
+	if ((flag_tcp & 0x08) == TH_PUSH)
+	{
+		if (not_first_flag)
+		{
+			flag_str<<" + ";
+		}
+		flag_str<<"PUSH";
+		not_first_flag = true;	
 	} 
+	if ((flag_tcp & 0x04) == TH_RST)
+	{
+		if (not_first_flag)
+		{
+			flag_str<<" + ";
+		}
+		flag_str<<"RST";
+		not_first_flag = true;	
+	} 
+	if ((flag_tcp & 0x02) == TH_SYN)
+	{ 
+		if (not_first_flag)
+		{
+			flag_str<<" + ";
+		 }
+		flag_str<<"SYN";
+		not_first_flag = true;	
+	}
+	if ((flag_tcp & 0x01) == TH_FIN)
+	{ 
+		if (not_first_flag)
+		{
+			flag_str<<" + ";
+		}
+		flag_str<<"FIN";
+		not_first_flag = true;	
+	}
+	return flag_str.str();
+} 

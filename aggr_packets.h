@@ -15,6 +15,7 @@ namespace cap_file
 		//summary
 		int number_of_packets;
 		int number_of_ip_packets;
+		int number_of_tcp_packets;
 		
 		//link layer
 		map <string,int> src_mac;
@@ -25,12 +26,14 @@ namespace cap_file
 		map <string,int> nw_src_ip;
 		map <string,int> nw_dest_ip;
 		map <int,int> nw_ttl;
-		map <string, unsigned int> nw_arp;
+		map <string, string> nw_arp;
 		
 		//transport layer
 		map <string,int> tr_proto;
-		
-		
+		//tcp
+		map <int,int> tcp_srcports;
+		map <int,int> tcp_desports;
+		map <string,int> tcp_flags;
 		 
 		public:
 		pcap_data_holder();
@@ -41,10 +44,10 @@ namespace cap_file
 		void add_source_ip(char *);
 		void add_dest_ip(char *);
 		void add_ttl(short unsigned int );
-		void add_arp_participants(string*, unsigned int);
+		void add_arp_participants(string*, string*);
 		void add_transport_protocol(u_int8_t *);
-	
-	
+		void add_tcp_ports(int, int);
+	  void add_tcp_flags(string );
 	
 	};
 } 

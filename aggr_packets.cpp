@@ -12,9 +12,10 @@ using std::setw;
 
 
 pcap_data_holder::pcap_data_holder()
-{
+{ 
 	number_of_packets = 0;
 	number_of_ip_packets = 0;
+	number_of_tcp_packets = 0;
 	} 
 
 void pcap_data_holder::output_content()
@@ -22,7 +23,9 @@ void pcap_data_holder::output_content()
 	typedef std::map<string,int>::const_iterator map_iter;
 	typedef std::map<int,int>::const_iterator map_iter_int;
 	typedef std::map<string, unsigned int>::const_iterator map_iter_string;
-	
+	typedef std::map<string, int>::const_iterator map_iter_string_int;
+	typedef std::map<string, string >::const_iterator map_iter_string_string;
+	typedef std::map<unsigned short,int>::const_iterator map_iter_short;
 	
 	cout<<"total number of packets:"<<number_of_packets<<endl;
 	
@@ -75,23 +78,46 @@ void pcap_data_holder::output_content()
 
 	cout<<endl<<"Here are the ARP participants:"<<endl;	
 	cout<<endl<<"MAC address | IP address"<<endl<<endl;
-	for (map_iter_string imap = nw_arp.begin(); imap != nw_arp.end(); imap++)
+	for (map_iter_string_string imap = nw_arp.begin(); imap != nw_arp.end(); imap++)
 	{
-		cout<<setw(20)<<imap->first<<" -- "<<setw(16)<<std::hex<<imap->second<<endl;
+		cout<<setw(20)<<imap->first<<" -- "<<setw(16)<<std::dec<<imap->second<<endl;
 
 	}
 	cout<<endl<<"********Transport Layer information ******"<<endl<<endl;
 	cout<<endl<<"Here are the transport layer protocols:"<<endl;	
 	for (map_iter imap = tr_proto.begin(); imap != tr_proto.end(); imap++)
 	{
-		cout<<setw(6)<<std::hex<<imap->first<<" -- "<<setw(4)<<imap->second<<" -- "<<std::setprecision(2)<<(((float)imap->second / number_of_ip_packets) * 100)<<"%"<<endl;
+		cout<<setw(6)<<std::hex<<imap->first<<" -- "<<setw(4)<<std::dec<<imap->second<<" -- "<<std::setprecision(2)<<(((float)imap->second / number_of_ip_packets) * 100)<<"%"<<endl;
 
 	}
+	cout<<endl<<"TCP information:"<<endl;
+	cout<<endl<<"Here are the source port numbers :"<<endl;	
+	cout<<endl<<"Port | Number of occurences | %"<<endl<<endl;
+	for (map_iter_int imap = tcp_srcports.begin(); imap != tcp_srcports.end(); imap++)
+	{
+		cout<<std::dec<<setw(6)<<imap->first<<" -- "<<setw(4)<<imap->second<<" -- "<<std::setprecision(2)<<(((float)imap->second / (float)number_of_tcp_packets) * 100)<<"%"<<endl;
+
+	}
+	cout<<endl<<"Here are the destinaion port numbers :"<<endl;	
+	cout<<endl<<"Port | Number of occurences | %"<<endl<<endl;
+	for (map_iter_int imap = tcp_desports.begin(); imap != tcp_desports.end(); imap++)
+	{
+		cout<<setw(6)<<imap->first<<" -- "<<setw(4)<<imap->second<<" -- "<<std::setprecision(2)<<(((float)imap->second / (float)number_of_tcp_packets) * 100)<<"%"<<endl;
+
+	}
+	cout<<endl<<"Here are the TCP flags:"<<endl;	
+	cout<<endl<<setw(50)<<"Flags in a given packet | occurences | %"<<endl<<endl;
+	for (map_iter_string_int imap = tcp_flags.begin(); imap != tcp_flags.end(); imap++)
+	{
+		cout<<setw(33)<<imap->first<<" -- "<<setw(6)<<imap->second<<" -- "<<std::setprecision(2)<<(((float)imap->second / (float)number_of_tcp_packets) * 100)<<"%"<<endl;
+
+	}
+	
 
 	
 	return;
-	}
-
+ 	}
+ 
 void pcap_data_holder::inc_num_of_pac()
 { 
 	number_of_packets++;
@@ -144,9 +170,9 @@ void pcap_data_holder::add_ttl(short unsigned int ttl)
 
 
 	
-void pcap_data_holder::add_arp_participants(string* arp_mac, unsigned int arp_ip)
+void pcap_data_holder::add_arp_participants(string* arp_mac, string* arp_ip)
 {
-	nw_arp[*arp_mac] = arp_ip;
+	nw_arp[*arp_mac] = *arp_ip;
 	
 	}
 
@@ -167,22 +193,20 @@ void pcap_data_holder::add_transport_protocol(u_int8_t *proto)
 		default:
 			std::stringstream temp;
 			temp<<"0x"<<std::setfill('0')<<setw(2)<<std::hex<<(int)*proto;
-	//		temp<<std::hex<<*proto;
 			tr_proto[temp.str()]++;
 	}
 
-	/*if (*proto == 0x06)
-	{
-		tr_proto["TCP"]++;
-		}
-	if (*proto == 0x01)
-	{
-		tr_proto["ICMP"]++;
-		}
-	if (*proto == 0x11)
-	{
-		tr_proto["UDP"]++;
-		}	*/
+}
+
+void pcap_data_holder::add_tcp_ports(int src_port, int dest_port)
+{
+	tcp_srcports[src_port]++;
+	tcp_desports[dest_port]++;
+	number_of_tcp_packets++;
+	}
+
+void pcap_data_holder::add_tcp_flags(string flags)
+{
+	tcp_flags[flags]++;
 	
-		
-	} 	
+	}	
