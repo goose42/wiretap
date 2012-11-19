@@ -4,7 +4,6 @@
 #include <netinet/ip.h>
 #include <arpa/inet.h>
 #include <netinet/if_ether.h>
-//#include <netinet/tcp.h>
 
 
 
@@ -96,8 +95,14 @@ void cap_file::got_packet(u_char* args, const struct pcap_pkthdr* header, const 
 			//get the flags as a list, in a string
 			aggr_data->add_tcp_flags(get_list_of_TCP_flags(tcp_hdr->th_flags));	
 			
-			}	
-
+			}	 
+		if(ip_head->ip_p == 0x11)//if we see a UCP protocol, do
+		{
+			struct cap_file::udphdr *udp_header = (struct cap_file::udphdr *) (packet + sizeof (struct eth) + sizeof (struct ip));
+			int source_udp_port = ntohs(udp_header->uh_sport);
+			int dest_udp_port = ntohs(udp_header->uh_dport);
+			aggr_data->add_udp_ports(&source_udp_port,&dest_udp_port);
+			}
 	} 
 	
 	if (ntohs(ether->type) == 2054) //do arp related stuff

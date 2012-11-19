@@ -16,7 +16,7 @@ namespace cap_file
 		int number_of_packets;
 		int number_of_ip_packets;
 		int number_of_tcp_packets;
-		
+		int number_of_udp_packets;
 		//link layer
 		map <string,int> src_mac;
 		map <string,int> dest_mac;
@@ -34,6 +34,9 @@ namespace cap_file
 		map <int,int> tcp_srcports;
 		map <int,int> tcp_desports;
 		map <string,int> tcp_flags;
+		//udp
+		map <int,int> udp_srcports;
+		map <int,int> udp_desports;
 		 
 		public:
 		pcap_data_holder();
@@ -48,7 +51,7 @@ namespace cap_file
 		void add_transport_protocol(u_int8_t *);
 		void add_tcp_ports(int, int);
 	  void add_tcp_flags(string );
-	
+		void add_udp_ports(int*, int*);
 	};
 } 
 

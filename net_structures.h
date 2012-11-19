@@ -33,7 +33,12 @@ struct tcp_header
  #define TH_ACK  0x10
  #define TH_URG  0x20
 
-
+struct udphdr {
+	u_short	uh_sport;		/* source port */
+	u_short	uh_dport;		/* destination port */
+	u_short	uh_ulen;		/* udp length */
+	u_short	uh_sum;			/* udp checksum */
+};
 
 
 }
