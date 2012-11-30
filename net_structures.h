@@ -33,15 +33,38 @@ struct tcp_header
  #define TH_ACK  0x10
  #define TH_URG  0x20
 
-struct udphdr {
+struct udphdr 
+{
 	u_short	uh_sport;		/* source port */
 	u_short	uh_dport;		/* destination port */
 	u_short	uh_ulen;		/* udp length */
 	u_short	uh_sum;			/* udp checksum */
 };
 
+struct icmphdr
+{
+  u_int8_t type;	
+  u_int8_t code;		
+  u_int16_t checksum;
+  union
+  {
+    struct
+    {
+      u_int16_t	id;
+      u_int16_t	sequence;
+    } echo;			
+    u_int32_t	gateway;	
+    struct
+    {
+      u_int16_t	__unused;
+      u_int16_t	mtu;
+    } frag;			
+  } un;
+};
 
-}
+
+
+ }
 
 
 #endif	

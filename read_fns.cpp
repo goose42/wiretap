@@ -4,7 +4,7 @@
 #include <netinet/ip.h>
 #include <arpa/inet.h>
 #include <netinet/if_ether.h>
-
+#include <cstdlib>
 
 
 
@@ -59,7 +59,7 @@ void cap_file::pcap_read (FILE *fp)
 
 
 void cap_file::got_packet(u_char* args, const struct pcap_pkthdr* header, const u_char* packet)
-{     
+{      
 	struct eth *ether = (struct eth *) packet;
 	string MAC_src, MAC_dest;
 
@@ -77,7 +77,7 @@ void cap_file::got_packet(u_char* args, const struct pcap_pkthdr* header, const 
 	aggr_data->add_network_protocol(ntohs(ether->type));
 	//network later
 	if (ntohs(ether->type) == 2048) //do IP related stuff
-	{
+	{ 
 		struct ip *ip_head = (struct ip *) (packet + sizeof (struct eth));
 		aggr_data->add_source_ip(inet_ntoa(ip_head->ip_src));
 		aggr_data->add_dest_ip(inet_ntoa(ip_head->ip_dst));
@@ -86,7 +86,7 @@ void cap_file::got_packet(u_char* args, const struct pcap_pkthdr* header, const 
 		//transport layer
 		aggr_data->add_transport_protocol(&ip_head->ip_p);
 		if(ip_head->ip_p == 0x06) //if we see a tcp protocol, do
-		{
+		{ 
 			struct cap_file::tcp_header *tcp_hdr = (struct cap_file::tcp_header *) (packet + sizeof (struct eth) + sizeof (struct ip));
 			int source_tcp_port = ntohs(tcp_hdr->th_sport);
 			int dest_tcp_port = ntohs(tcp_hdr->th_dport);
@@ -97,14 +97,28 @@ void cap_file::got_packet(u_char* args, const struct pcap_pkthdr* header, const 
 			
 			}	 
 		if(ip_head->ip_p == 0x11)//if we see a UCP protocol, do
-		{
+		{ 
 			struct cap_file::udphdr *udp_header = (struct cap_file::udphdr *) (packet + sizeof (struct eth) + sizeof (struct ip));
 			int source_udp_port = ntohs(udp_header->uh_sport);
 			int dest_udp_port = ntohs(udp_header->uh_dport);
 			aggr_data->add_udp_ports(&source_udp_port,&dest_udp_port);
 			}
-	} 
-	
+		if(ip_head->ip_p == 0x01)//if we see an ICMP protocol, do
+		{
+			struct icmphdr *icmp_hdr = (struct icmphdr *) (packet + sizeof (struct eth) + sizeof (struct ip));
+			struct ip *ip_inner = (struct ip *) (packet + sizeof (struct eth) + sizeof (struct ip) + 8);
+
+			string src_ip = inet_ntoa(ip_head->ip_src);
+			string dst_ip = inet_ntoa(ip_head->ip_dst);
+			aggr_data->add_icmp_ip(&src_ip, &dst_ip);
+			int code = icmp_hdr->code; 
+			aggr_data->add_icmp_code(&code);
+			int type = icmp_hdr->type;
+			aggr_data->add_icmp_type(&type);
+		}
+
+	}  
+
 	if (ntohs(ether->type) == 2054) //do arp related stuff
 	{
 		struct ether_arp * arp_head = (struct  ether_arp *) (packet + sizeof(struct eth));
