@@ -19,6 +19,9 @@ pcap_data_holder::pcap_data_holder()
 	number_of_tcp_options = 0;
 	number_of_udp_packets = 0;
 	number_of_icmp_packets = 0;
+	smallest_packet = 0;
+	total_size_of_packets =0;
+
 	} 
 
 void pcap_data_holder::output_content()
@@ -29,8 +32,37 @@ void pcap_data_holder::output_content()
 	typedef std::map<string, int>::const_iterator map_iter_string_int;
 	typedef std::map<string, string >::const_iterator map_iter_string_string;
 	typedef std::map<unsigned short,int>::const_iterator map_iter_short;
+
+
+
+	cout<<"******Summary*******"<<endl;
+	cout<<"Total number of packets: "<<number_of_packets<<endl;
+	cout<<"Smallest packet: "<<smallest_packet<<" bytes"<<endl;
+	cout<<"Biggest packet: "<<biggest_packet<<" bytes"<<endl;
+	cout<<"Average size of packets:"<<std::setprecision(6)<<((float)total_size_of_packets/(float)number_of_packets )<<" bytes"<<endl;
 	
-	cout<<"total number of packets:"<<number_of_packets<<endl;
+	char tmbuf1[64], tmbuf2[64];
+	struct tm *nowtm;
+	nowtm = localtime(&start_time);
+
+
+	strftime(tmbuf1, sizeof tmbuf1, "%Y-%m-%d %H:%M:%S", nowtm);
+	snprintf(tmbuf2, sizeof tmbuf2, "%s.%06d", tmbuf1, (int)start_time_ms );
+	cout<<"start time: "<<tmbuf2<<endl;
+	long int  diff = last_time - start_time;	
+	long int diff_ms;
+	if (start_time_ms > last_time_ms)
+	{	
+	diff_ms = last_time_ms - start_time_ms + 1000000;
+	diff --;
+	}
+	else
+		diff_ms = last_time_ms - start_time_ms;
+	nowtm = localtime(&diff);
+	strftime(tmbuf1, sizeof tmbuf1, "%M:%S", nowtm);
+	snprintf(tmbuf2, sizeof tmbuf2, "%s.%06d", tmbuf1, (int)diff_ms );
+	cout<<"Duration: "<<tmbuf2<<endl;
+
 	
 	cout<<endl<<"******** Link Layer information ******"<<endl<<endl;
 	cout<<"Here are the source MAC addresses:"<<endl;
@@ -53,7 +85,7 @@ void pcap_data_holder::output_content()
 //	cout<<"Addresses | Number of occurences | %"<<endl<<endl;
 	for (map_iter imap = nw_proto.begin(); imap != nw_proto.end(); imap++)
 	{
-		cout<<setw(6)<<imap->first<<" -- "<<setw(4)<<imap->second<<" -- "<<std::setprecision(2)<<(((float)imap->second / number_of_packets) * 100)<<"%"<<endl;
+		cout<<setw(16)<<imap->first<<" -- "<<setw(4)<<imap->second<<" -- "<<std::setprecision(2)<<(((float)imap->second / number_of_packets) * 100)<<"%"<<endl;
 
 	}
 	cout<<endl<<"Here are the source IP addresses:"<<endl;	
@@ -199,7 +231,10 @@ void pcap_data_holder::add_network_protocol(int prot)
 			nw_proto["ARP"]++;
 		else 
 		{
-			temp<<"0x"<<std::setw(4)<<std::setfill('0')<<std::hex<<prot;
+			if (prot < 2048)
+				temp<<"length : 0x"<<std::setw(4)<<std::setfill('0')<<std::hex<<prot;
+			else
+				temp<<"0x"<<std::setw(4)<<std::setfill('0')<<std::hex<<prot;
 			nw_proto[temp.str()]++;
  		}
 	return;	
@@ -301,4 +336,39 @@ void pcap_data_holder::add_icmp_code(int* code)
 {
 	icmp_code[*code]++;
 	}
+
+
+
+void pcap_data_holder::add_packet_size(int size)
+{
+	if (number_of_packets == 0)
+	{
+		smallest_packet = size;
+		biggest_packet = size;
+		total_size_of_packets += size;
+		return;
+		}
+	if (size < smallest_packet)
+	{
+		smallest_packet = size;
+
+		}		
+	if (size > biggest_packet)
+	{
+		biggest_packet = size;
+		}
 	
+	total_size_of_packets+= size;
+	}
+	
+	
+void pcap_data_holder::add_time(long int * time,long int* ms)
+{
+	if (number_of_packets == 0)
+	{
+		start_time = *time;
+		start_time_ms = *ms;
+		}
+	last_time = *time;
+	last_time_ms = *ms;
+	}

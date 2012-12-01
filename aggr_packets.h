@@ -4,6 +4,7 @@
 #include <pcap/pcap.h>
 #include <map>
 #include <string>
+#include <sys/time.h>
 
 using std::map;
 using std::string;
@@ -13,6 +14,8 @@ namespace cap_file
 	class pcap_data_holder
 	{
 		//summary
+		
+		
 		int number_of_packets;
 		int number_of_ip_packets;
 		int number_of_tcp_packets;
@@ -20,6 +23,14 @@ namespace cap_file
 		int number_of_udp_packets;
 		int number_of_icmp_packets;
 		
+		int smallest_packet;
+		int biggest_packet;
+		int total_size_of_packets;
+		long int start_time;
+		long int start_time_ms;
+		long int last_time;
+		long int last_time_ms;
+
 		//link layer
 		map <string,int> src_mac;
 		map <string,int> dest_mac;
@@ -50,6 +61,7 @@ namespace cap_file
 		public:
 		pcap_data_holder();
 		void inc_num_of_pac(); 
+		void add_packet_size(int);
 		void output_content();
 		void add_MAC(string *, string *);
 		void add_network_protocol(int);
@@ -65,7 +77,7 @@ namespace cap_file
 		void add_icmp_ip(string *, string *);
 		void add_icmp_type(int *);
 		void add_icmp_code(int *);
-
+		void add_time(long int *,long int*);
 	
 	
 	};

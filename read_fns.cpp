@@ -5,7 +5,7 @@
 #include <arpa/inet.h>
 #include <netinet/if_ether.h>
 #include <cstdlib>
-
+#include <sys/time.h>
 
 
 #include "read_fns.h"
@@ -62,9 +62,19 @@ void cap_file::got_packet(u_char* args, const struct pcap_pkthdr* header, const 
 {      
 	struct eth *ether = (struct eth *) packet;
 	string MAC_src, MAC_dest;
+	
+	//time stuff
+	
+	
 
+
+
+	
 	pcap_data_holder *aggr_data = (pcap_data_holder *) args;
 
+
+	aggr_data->add_packet_size(header->len);
+	aggr_data->add_time((long int*) &header->ts.tv_sec,(long int *)&header->ts.tv_usec);
 	aggr_data->inc_num_of_pac();
 
 	//linked layer
@@ -108,7 +118,6 @@ void cap_file::got_packet(u_char* args, const struct pcap_pkthdr* header, const 
 		if(ip_head->ip_p == 0x01)//if we see an ICMP protocol, do
 		{
 			struct icmphdr *icmp_hdr = (struct icmphdr *) (packet + sizeof (struct eth) + sizeof (struct ip));
-			struct ip *ip_inner = (struct ip *) (packet + sizeof (struct eth) + sizeof (struct ip) + 8);
 
 			string src_ip = inet_ntoa(ip_head->ip_src);
 			string dst_ip = inet_ntoa(ip_head->ip_dst);
