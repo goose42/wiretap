@@ -19,7 +19,8 @@ struct tcp_header
 	u_short th_dport;
 	u_int th_seq;
 	u_int th_ack;
-	u_char   th_offsetx2;
+	u_int8_t th_x2:4;
+	u_int8_t th_of:4;
 	u_char  th_flags;
 	u_short th_win;        
 	u_short th_sum;        

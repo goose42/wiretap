@@ -12,10 +12,11 @@ using std::setw;
 
 
 pcap_data_holder::pcap_data_holder()
-{  
+{   
 	number_of_packets = 0;
 	number_of_ip_packets = 0;
 	number_of_tcp_packets = 0;
+	number_of_tcp_options = 0;
 	number_of_udp_packets = 0;
 	number_of_icmp_packets = 0;
 	} 
@@ -114,6 +115,14 @@ void pcap_data_holder::output_content()
 		cout<<setw(33)<<imap->first<<" -- "<<setw(6)<<imap->second<<" -- "<<std::setprecision(2)<<(((float)imap->second / (float)number_of_tcp_packets) * 100)<<"%"<<endl;
 
 	}
+	cout<<endl<<"Here are the TCP options:"<<endl;	
+	cout<<endl<<setw(50)<<"Options set in a given packet | occurences | %"<<endl<<endl;
+	for (map_iter_int imap = tcp_opts.begin(); imap != tcp_opts.end(); imap++)
+	{
+		cout<<setw(12)<<imap->first<<" -- "<<setw(6)<<imap->second<<" -- "<<std::setprecision(2)<<(int)(((float)imap->second / (float)number_of_tcp_packets) * 100)<<"%"<<endl;
+
+	}
+
 	cout<<endl<<"UDP information:"<<endl;
 	cout<<endl<<"Here are the source port numbers :"<<endl;	
 	cout<<endl<<"Port | Number of occurences | %"<<endl<<endl;
@@ -141,14 +150,14 @@ void pcap_data_holder::output_content()
 	cout<<endl<<"Addresses | Number of occurences | %"<<endl<<endl;
 	for (map_iter imap = icmp_dest_ip.begin(); imap != icmp_dest_ip.end(); imap++)
 	{
-		cout<<setw(16)<<imap->first<<" -- "<<setw(4)<<imap->second<<" -- "<<std::setprecision(2)<<((float) imap->second / (float)  number_of_icmp_packets)  * 100<<"%"<<endl;
+		cout<<setw(16)<<imap->first<<" -- "<<setw(4)<<imap->second<<" -- "<<std::dec<<std::setprecision(2)<<( imap->second /   number_of_icmp_packets)  * 100<<"%"<<endl;
 
 	}
 	cout<<endl<<"Here are the ICMP types:"<<endl;	
 	cout<<endl<<"Addresses | Number of occurences | %"<<endl<<endl;
 	for (map_iter_int imap = icmp_type.begin(); imap != icmp_type.end(); imap++)
 	{
-		cout<<setw(16)<<imap->first<<" -- "<<setw(4)<<imap->second<<" -- "<<std::setprecision(2)<<((float)(imap->second / number_of_icmp_packets) * 100)<<"%"<<endl;
+		cout<<setw(16)<<imap->first<<" -- "<<setw(4)<<imap->second<<" -- "<<std::setprecision(2)<<((imap->second / number_of_icmp_packets) * 100)<<"%"<<endl;
 
 	}
 
@@ -156,7 +165,7 @@ void pcap_data_holder::output_content()
 	cout<<endl<<"Addresses | Number of occurences | %"<<endl<<endl;
 	for (map_iter_int imap = icmp_code.begin(); imap != icmp_code.end(); imap++)
 	{
-		cout<<setw(16)<<imap->first<<" -- "<<setw(4)<<imap->second<<" -- "<<std::setprecision(2)<<((float)(imap->second / number_of_icmp_packets) * 100)<<"%"<<endl;
+		cout<<setw(16)<<imap->first<<" -- "<<setw(4)<<imap->second<<" -- "<<std::setprecision(2)<<((imap->second / number_of_icmp_packets) * 100)<<"%"<<endl;
 
 	}
 
@@ -258,7 +267,14 @@ void pcap_data_holder::add_tcp_flags(string flags)
 {
 	tcp_flags[flags]++;
 	
-	}	
+	 }	
+
+void pcap_data_holder::add_tcp_opts(int opts)
+{
+	tcp_opts[opts]++;
+	number_of_tcp_options++;
+	}
+
 
 void pcap_data_holder::add_udp_ports(int *source_port, int *dest_port)
 {
@@ -277,7 +293,7 @@ void pcap_data_holder::add_icmp_ip(string *src_ip, string *dest_ip)
 	
 
 void pcap_data_holder::add_icmp_type(int* type)
-{
+{  
 	icmp_type[*type]++;
 	}
 	

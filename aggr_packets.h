@@ -16,8 +16,10 @@ namespace cap_file
 		int number_of_packets;
 		int number_of_ip_packets;
 		int number_of_tcp_packets;
+		int number_of_tcp_options;
 		int number_of_udp_packets;
 		int number_of_icmp_packets;
+		
 		//link layer
 		map <string,int> src_mac;
 		map <string,int> dest_mac;
@@ -35,6 +37,7 @@ namespace cap_file
 		map <int,int> tcp_srcports;
 		map <int,int> tcp_desports;
 		map <string,int> tcp_flags;
+		map <int, int> tcp_opts;
 		//udp
 		map <int,int> udp_srcports;
 		map <int,int> udp_desports;
@@ -56,7 +59,8 @@ namespace cap_file
 		void add_arp_participants(string*, string*);
 		void add_transport_protocol(u_int8_t *);
 		void add_tcp_ports(int, int);
-	  void add_tcp_flags(string );
+	  void add_tcp_flags(string);
+		void add_tcp_opts(int);
 		void add_udp_ports(int*, int*);
 		void add_icmp_ip(string *, string *);
 		void add_icmp_type(int *);

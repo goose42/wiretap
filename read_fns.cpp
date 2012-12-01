@@ -94,6 +94,8 @@ void cap_file::got_packet(u_char* args, const struct pcap_pkthdr* header, const 
 			
 			//get the flags as a list, in a string
 			aggr_data->add_tcp_flags(get_list_of_TCP_flags(tcp_hdr->th_flags));	
+			//get options
+			cap_file::get_tcp_options(packet, tcp_hdr, aggr_data);
 			
 			}	 
 		if(ip_head->ip_p == 0x11)//if we see a UCP protocol, do
@@ -150,8 +152,52 @@ string cap_file::MAC_in_string(u_char *raw)
 	}
 	
 
-//string ip_uint_to_ip(uint)
 
+
+
+void cap_file::get_tcp_options(const u_char *packet,struct cap_file::tcp_header *tcp_head, pcap_data_holder *aggr_data)
+{
+	char *read_opts;
+	int length_trav =0;
+	int type;
+	std::map <int,int> type_seen;
+	std::map <int, int> tcp_opt_len;
+	tcp_opt_len[2]=4;
+	tcp_opt_len[3]=3;
+	tcp_opt_len[4]=2;
+	tcp_opt_len[6]=6;
+	tcp_opt_len[7]=6;
+	tcp_opt_len[8]=10;
+	tcp_opt_len[9]=2;
+	tcp_opt_len[10]=3;
+	tcp_opt_len[14]=3;
+	tcp_opt_len[18]=3;
+	tcp_opt_len[19]=18;
+	tcp_opt_len[27]=8;
+	tcp_opt_len[28]=4;	
+
+	//cout<<tcp_head->th_of*4<<endl;
+	
+	if ((tcp_head->th_of*4) > 20 )
+
+	{
+		while (length_trav < (tcp_head->th_of*4) - 20 )	
+		{
+			read_opts = (char *) (packet + sizeof (struct eth) + sizeof (struct ip)) + 20 + length_trav;
+			type =(int)read_opts[0]; 
+			if (type_seen.find(type) == type_seen.end())
+				aggr_data->add_tcp_opts(type);		
+			type_seen[type]++;
+			if (tcp_opt_len.find(type) == tcp_opt_len.end())
+				length_trav += 1;
+			else
+				length_trav += tcp_opt_len[type];
+		}
+	}	
+	//cout<<endl;
+}
+
+//string ip_uint_to_ip(uint)
 
 string cap_file::get_list_of_TCP_flags(u_char flag_tcp)
 { 
