@@ -1,7 +1,7 @@
 wiretap
 =======
 
-analyze network packets (at network, IP and transport protocol later) that are in
+Analyze network packets (at network, IP and transport protocol later) that are in
 a pcap dump file.
 
 Usage:
