@@ -55,7 +55,7 @@ namespace cap_file
 		//icmp
 		map <string,int> icmp_src_ip;
 		map <string,int> icmp_dest_ip;
-	  map <int,int> icmp_type;
+                map <int,int> icmp_type;
 		map <int,int> icmp_code;	
 		 
 		public:
@@ -71,7 +71,7 @@ namespace cap_file
 		void add_arp_participants(string*, string*);
 		void add_transport_protocol(u_int8_t *);
 		void add_tcp_ports(int, int);
-	  void add_tcp_flags(string);
+                void add_tcp_flags(string);
 		void add_tcp_opts(int);
 		void add_udp_ports(int*, int*);
 		void add_icmp_ip(string *, string *);

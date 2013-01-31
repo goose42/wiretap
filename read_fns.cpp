@@ -49,10 +49,10 @@ void cap_file::pcap_read (FILE *fp)
 
 
 	//read the file for packets here
-	pcap_loop(handle, -1, cap_file::got_packet, user_data); 	
-	pcap_close(handle);
+	pcap_dispatch(handle, -1, cap_file::got_packet, user_data); 	
 	aggr_packet.output_content();
   	
+	//pcap_close(handle);
 	return;
 
 }  
